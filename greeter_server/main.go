@@ -36,7 +36,7 @@ const (
 
 // server is used to implement helloworld.GreeterServer.
 type server struct {
-	// pb     pb.UnimplementedGreeterServer
+	pb.UnimplementedGreeterServer
 	healthy.UnimplementedHealthServer
 }
 
@@ -51,7 +51,7 @@ func (s *server) SayHelloAgain(ctx context.Context, in *pb.HelloRequest) (*pb.He
 }
 
 // healthy check
-func (s *server) HealthCheck(ctx context.Context, in *healthy.HealthCheckRequest) (*healthy.HealthCheckResponse, error) {
+func (s *server) Check(ctx context.Context, in *healthy.HealthCheckRequest) (*healthy.HealthCheckResponse, error) {
 	log.Printf("Received: %v", in.GetService())
 	return &healthy.HealthCheckResponse{Status: healthy.HealthCheckResponse_SERVING}, nil
 }
@@ -62,7 +62,7 @@ func main() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 	s := grpc.NewServer()
-	// pb.RegisterGreeterServer(s, &server{})
+	pb.RegisterGreeterServer(s, &server{})
 
 	healthy.RegisterHealthServer(s, &server{})
 
