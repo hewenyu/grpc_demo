@@ -26,6 +26,7 @@ import (
 
 	"google.golang.org/grpc"
 
+	"github.com/hewenyu/grpc_demo/healthy"
 	pb "github.com/hewenyu/grpc_demo/helloworld"
 )
 
@@ -35,7 +36,8 @@ const (
 
 // server is used to implement helloworld.GreeterServer.
 type server struct {
-	pb.UnimplementedGreeterServer
+	// pb     pb.UnimplementedGreeterServer
+	healthy.UnimplementedHealthServer
 }
 
 // SayHello implements helloworld.GreeterServer
@@ -48,13 +50,22 @@ func (s *server) SayHelloAgain(ctx context.Context, in *pb.HelloRequest) (*pb.He
 	return &pb.HelloReply{Message: "Hello again " + in.GetName()}, nil
 }
 
+// healthy check
+func (s *server) HealthCheck(ctx context.Context, in *healthy.HealthCheckRequest) (*healthy.HealthCheckResponse, error) {
+	log.Printf("Received: %v", in.GetService())
+	return &healthy.HealthCheckResponse{Status: healthy.HealthCheckResponse_SERVING}, nil
+}
+
 func main() {
 	lis, err := net.Listen("tcp", port)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
 	s := grpc.NewServer()
-	pb.RegisterGreeterServer(s, &server{})
+	// pb.RegisterGreeterServer(s, &server{})
+
+	healthy.RegisterHealthServer(s, &server{})
+
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
